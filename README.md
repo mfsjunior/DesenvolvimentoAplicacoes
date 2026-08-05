@@ -1,349 +1,93 @@
-# CRUD Fullstack - README Geral (Engenharia Reversa por Branch)
-
-Este documento descreve tecnicamente o que acontece em cada branch da evolucao.
-A leitura correta e sequencial: voce comeca no monolito basico e avanca evento por evento.
-
-## 1. Regra do projeto
-
-Cada branch representa um evento de evolucao.
-A branch seguinte sempre herda a anterior e adiciona mudancas novas.
-
-Sequencia usada:
-
-1. `branch-1-monolito-basico`
-2. `branch-2-alteracao-banco-dados`
-3. `branch-3-consultas-avancadas`
-4. `branch-4-auth-jwt`
-5. `branch-5-entidades-avancadas`
-6. `branch-6-handlers-tratamento-erros`
-7. `branch-7-roles-professor-aluno`
-8. `branch-8-microservicos`
-9. `branch-9-comunicacao-microservicos-resiliencia`
-
-## Matriz unica de validacao por branch
-
-| Branch | Objetivo | Endpoints obrigatorios | Evidencia esperada |
-|---|---|---|---|
-| `branch-1-monolito-basico` | Subir monolito com MongoDB e validar CRUD inicial. | `GET /pessoas`, `POST /pessoas`, `GET /curso`, `POST /curso` | JSON de leitura e criacao funcionando com status 200/201. |
-| `branch-2-alteracao-banco-dados` | Consolidar persistencia relacional e rotas base `/api`. | `GET /api/pessoas`, `POST /api/pessoas`, `GET /api/curso` | Respostas com dados persistidos apos reinicio da aplicacao. |
-| `branch-3-consultas-avancadas` | Validar filtros, paginacao e ordenacao nas buscas. | `GET /api/pessoas/busca?...`, `GET /api/curso/busca?...`, `GET /api/avaliacao/busca?...` | Resultado paginado com metadados (`page`, `size`, ordenacao). |
-| `branch-4-auth-jwt` | Garantir autenticacao JWT e acesso protegido. | `POST /api/auth/login`, `GET /api/pessoas` com token | Token retornado no login e acesso autorizado com Bearer. |
-| `branch-5-entidades-avancadas` | Validar regras de dominio e Bean Validation. | `POST /api/pessoas` invalido, `POST /api/professor` invalido | Erros de validacao com status 400 e mensagens de campo. |
-| `branch-6-handlers-tratamento-erros` | Padronizar tratamento de excecoes da API. | Requisicao invalida (`400`), recurso inexistente (`404`), erro interno (`500`) | Corpo de erro padronizado com status, mensagem e timestamp. |
-| `branch-7-roles-professor-aluno` | Confirmar autorizacao por perfil (ALUNO x PROFESSOR). | `POST /api/auth/register-aluno`, `GET /api/auth/usuarios`, `POST /api/pessoas` com token ALUNO | `GET /usuarios` permitido para professor e `403` para operacao de escrita com aluno. |
-| `branch-8-microservicos` | Validar gateway + servicos de matricula em arquitetura distribuida. | `GET /gateway/matriculas`, `POST /gateway/matriculas`, `GET /api/matriculas/{id}/detalhada` | Resposta via gateway e resposta detalhada do servico de matricula. |
-| `branch-9-comunicacao-microservicos-resiliencia` | Validar comunicacao entre servicos e degradacao controlada. | Chamada entre servicos (ex: matricula -> pessoa/curso), teste com um servico fora do ar | API responde erro amigavel (`503`) sem quebrar o gateway inteiro. |
-
-## 2. Mapa tecnico do backend
-
-Pacote base atual:
-
-- `com.exemplo.crud`
-
-Camadas do monolito:
-
-- `Model`
-- `repository`
-- `service`
-- `controller`
-- `config`
-- `dto`
-
-Entidades principais:
-
-- Pessoa
-- Curso
-- Professor
-- Disciplina
-- Turma
-- Matricula
-- Avaliacao
-- Usuario
-
-## 3. O que cada branch adiciona (reversa tecnica)
-
-## Branch 1 - Monolito basico
-
-Base tecnica observada:
-
-- Aplicacao Spring Boot monolitica em `backend`.
-- Persistencia via Spring Data MongoDB (sem JPA).
-- Conexao direcionada para MongoDB (local ou MongoDB Atlas).
-- Estrutura em camadas completa para entidades do dominio.
-- Endpoints REST de CRUD ja presentes para as entidades principais.
-
-Execucao:
-
-Antes de executar, crie uma conta no MongoDB Atlas, crie um cluster e copie a URI de conexao (Connect > Drivers) para usar na variavel `MONGODB_URI`.
-
-```bash
-git checkout branch-1-monolito-basico
-cd backend
-$env:MONGODB_URI="mongodb+srv://<usuario>:<senha>@<cluster>/<database>?retryWrites=true&w=majority"
-mvn spring-boot:run
-```
-
-Endpoints de teste (branch 1):
-
-1. `GET /pessoas`
-2. `POST /pessoas`
-3. `PUT /pessoas/{id}`
-4. `DELETE /pessoas/{id}`
-5. `GET /curso`
-6. `POST /curso`
-
-## Branch 2 - Alteracao de banco de dados
-
-Evento esperado:
-
-- Consolidacao do backend com banco relacional e configuracoes de persistencia.
-
-Indicador tecnico:
-
-- Mantem base JPA/H2 consolidada e estrutura para evolucoes seguintes.
-
-Execucao:
-
-```bash
-git checkout branch-2-alteracao-banco-dados
-cd backend
-mvn spring-boot:run
-```
-
-Endpoints de teste (branch 2):
-
-1. `GET /api/pessoas`
-2. `POST /api/pessoas`
-3. `GET /api/curso`
-4. `POST /api/curso`
-5. `GET /api/professor`
-6. `GET /api/disciplina`
-
-## Branch 3 - Consultas avancadas
-
-Mudanca tecnica relevante:
-
-- Repositorios passam a usar `JpaSpecificationExecutor`.
-- Services ganham busca dinamica com `Specification`.
-- Controllers exp�em rotas `/busca` com filtros opcionais.
-- Suporte a paginacao e ordenacao em todas as entidades de dominio.
-
-Arquivos/areas chave:
-
-- `repository/*Repository.java`
-- `service/*Service.java`
-- `controller/*Controller.java`
-
-Execucao:
-
-```bash
-git checkout branch-3-consultas-avancadas
-cd backend
-mvn spring-boot:run
-```
-
-Endpoints de teste (branch 3):
-
-1. `GET /api/pessoas/busca?nome=Ana&page=0&size=10&sort=nome,asc`
-2. `GET /api/curso/busca?nome=Engenharia&page=0&size=10`
-3. `GET /api/professor/busca?nome=Joao&page=0&size=10`
-4. `GET /api/disciplina/busca?nome=Calculo&page=0&size=10`
-5. `GET /api/turma/busca?nome=Turma A&page=0&size=10`
-6. `GET /api/matricula/busca?page=0&size=10`
-7. `GET /api/avaliacao/busca?page=0&size=10`
-
-## Branch 4 - Auth JWT
-
-Mudanca tecnica relevante:
-
-- Padronizacao das rotas de dominio com base `/api`.
-- Homogeneizacao de acesso com regras de seguranca por metodo HTTP.
-- Integracao consistente com filtro JWT ja existente.
-
-Arquivos/areas chave:
-
-- `config/SecurityConfig.java`
-- `controller/*Controller.java`
-
-Execucao:
-
-```bash
-git checkout branch-4-auth-jwt
-cd backend
-mvn spring-boot:run
-```
-
-Endpoints de teste (branch 4):
-
-1. `POST /api/auth/login`
-2. `POST /api/auth/register`
-3. `GET /api/pessoas` (com token)
-4. `POST /api/pessoas` (com token)
-5. `GET /api/curso/busca?page=0&size=10` (com token)
-
-## Branch 5 - Entidades avancadas
-
-Mudanca tecnica relevante:
-
-- Entidades recebem constraints de coluna e validacoes Bean Validation.
-- Controllers passam a validar payload com `@Valid` nos endpoints de escrita.
-- Regras de dominio ficam mais estritas no modelo (tamanho, formato, faixa).
-
-Arquivos/areas chave:
-
-- `Model/*.java`
-- `controller/*Controller.java`
-
-Execucao:
-
-```bash
-git checkout branch-5-entidades-avancadas
-cd backend
-mvn spring-boot:run
-```
-
-Endpoints de teste (branch 5):
-
-1. `POST /api/pessoas` (validar `nome`, `email`, `idade`)
-2. `POST /api/professor` (validar campos obrigatorios)
-3. `POST /api/disciplina` (validar `nome` e carga)
-4. `POST /api/turma` (validar `nome` e ano)
-5. `POST /api/avaliacao` (validar faixa de nota)
-6. `PUT /api/pessoas/{id}` com payload invalido (esperado `400`)
-
-## Branch 6 - Handlers e tratamento de erros
-
-Mudanca tecnica relevante:
-
-- Inclusao de `GlobalExceptionHandler` com `@ControllerAdvice`.
-- Padronizacao de respostas de erro para validacao, negocio e erro inesperado.
-- Melhor rastreabilidade para cliente e logs do backend.
-
-Endpoints de teste (branch 6):
-
-1. `POST /api/pessoas` com payload invalido (esperado `400`).
-2. `GET /api/pessoas/{id}` inexistente (esperado `404`).
-3. Forcar erro interno de teste (esperado `500` com payload padronizado).
-
-## Branch 7 - Roles Professor/Aluno
-
-Mudanca tecnica relevante:
-
-- Evolucao da camada de autenticacao/autorizacao por perfil.
-- Novos endpoints em auth para operacao por papel.
-- Cadastro publico de aluno e endpoint de perfil do usuario autenticado.
-- Listagem de usuarios resumida restrita a professor.
-
-Arquivos/areas chave:
-
-- `controller/AuthController.java`
-- `service/UsuarioService.java`
-- `repository/UsuarioRepository.java`
-- `dto/UsuarioResumoDTO.java`
-- `config/SecurityConfig.java`
-
-Execucao:
-
-```bash
-git checkout branch-7-roles-professor-aluno
-cd backend
-mvn spring-boot:run
-```
-
-Endpoints de teste (branch 7):
-
-1. `POST /api/auth/login` (professor)
-2. `POST /api/auth/login` (aluno)
-3. `POST /api/auth/register-aluno`
-4. `GET /api/auth/me` (com token)
-5. `GET /api/auth/usuarios` (somente professor)
-6. `POST /api/pessoas` com token de aluno (esperado `403`)
-
-## Branch 8 - Microservicos
-
-Mudanca tecnica relevante:
-
-- Introducao da estrutura `microservicos/*`.
-- Introducao de `gateway-service` para roteamento HTTP.
-- Compose dedicado para subir os servicos em conjunto.
-- `matricula-service` e o modulo mais completo na etapa de microservicos.
-
-Arquivos/areas chave:
-
-- `gateway-service/*`
-- `microservicos/*`
-- `docker-compose.microservicos.yml`
-
-Execucao:
-
-```bash
-git checkout branch-8-microservicos
-docker compose -f docker-compose.microservicos.yml up --build
-```
-
-Endpoints de teste (branch 8):
-
-1. `GET http://localhost:8080/gateway/matriculas`
-2. `GET http://localhost:8080/gateway/matriculas/{id}`
-3. `POST http://localhost:8080/gateway/matriculas`
-4. `GET http://localhost:8081/api/matriculas`
-5. `GET http://localhost:8081/api/matriculas/{id}/detalhada`
-
-## Branch 9 - Comunicacao entre microservicos e resiliencia
-
-Mudanca tecnica relevante:
-
-- Comunicacao entre servicos via HTTP entre dominios (ex: matricula consultando pessoa/curso/turma).
-- Tratamento de indisponibilidade de servico remoto com resposta controlada.
-- Evita falha em cascata no gateway e melhora observabilidade de erros distribuidos.
-
-Arquivos/areas chave:
-
-- `microservicos/*/service/*Service.java`
-- `microservicos/*/controller/*Controller.java`
-- `microservicos/*/error/GlobalExceptionHandler.java`
-- `gateway-service/src/main/java/**`
-
-Execucao:
-
-```bash
-git checkout branch-9-comunicacao-microservicos-resiliencia
-docker compose -f docker-compose.microservicos.yml up --build
-```
-
-Endpoints de teste (branch 9):
-
-1. `GET http://localhost:8080/gateway/matriculas/{id}/detalhada` (com servicos no ar).
-2. Derrubar um servico dependente (ex: pessoa/curso) e repetir chamada detalhada.
-3. Validar retorno `503` com mensagem de indisponibilidade do servico remoto.
-
-## 4. Teste geral no Postman (resumo objetivo)
-
-## Monolito (branch 7)
-
-1. Login professor: `POST /api/auth/login`.
-2. Login aluno: `POST /api/auth/login`.
-3. Perfil logado: `GET /api/auth/me`.
-4. CRUD completo de todas as entidades com professor.
-5. Validar `403` ao tentar escrita com aluno.
-6. Executar `/busca` de todas as entidades.
-
-## Microservicos (branch 8)
-
-1. `GET http://localhost:8080/gateway/matriculas`.
-2. `GET http://localhost:8081/api/matriculas`.
-3. `GET http://localhost:8081/api/matriculas/{id}/detalhada`.
-
-## Comunicacao e resiliencia (branch 9)
-
-1. `GET http://localhost:8080/gateway/matriculas/{id}/detalhada` com todos os servicos ativos.
-2. Parar um servico dependente e repetir a chamada.
-3. Validar retorno controlado (`503`) sem derrubar os demais endpoints.
-
-## 5. Entrega recomendada do aluno
-
-1. Collection do Postman exportada.
-2. Environment do Postman exportado.
-3. Evidencias de resposta dos endpoints obrigatorios.
-4. Link da branch validada.
-5. Resumo do que mudou em cada evento.
+# 🚀 Desenvolvimento de Aplicações - Arquitetura de Microsserviços
+
+Bem-vindo ao repositório oficial da disciplina de **Desenvolvimento de Aplicações**. 
+Neste semestre, não construímos apenas um sistema; nós vivenciamos a **Evolução Arquitetural** completa de um software. Saímos de um simples Monolito Crud até alcançarmos um Ecossistema Complexo, Orientado a Eventos, com Persistência Poliglota e Inteligência Artificial.
+
+---
+
+## 🗺️ O Que Vamos Trabalhar Neste Semestre na Disciplina?
+O objetivo desta disciplina é preparar você para os desafios reais da Engenharia de Software Moderna. Ao longo do semestre, focamos em conceitos práticos de alta demanda no mercado corporativo:
+
+1. **Evolução de Arquiteturas (Monolito vs Microsserviços)**: Compreender os *trade-offs*, as dores do acoplamento e as estratégias de estrangulamento para fatiar aplicações legadas.
+2. **Padrões de Nuvem (Cloud Native Patterns)**: Implementação na prática de API Gateways, Service Discovery (Eureka), Configurações Centralizadas e Load Balancing.
+3. **Persistência Poliglota**: Saber escolher a ferramenta certa para o problema certo. Quando o relacionamento rígido do **PostgreSQL** é necessário e quando a flexibilidade do **MongoDB** brilha.
+4. **Arquitetura Orientada a Eventos (EDA)**: Desacoplamento de processos pesados (como financeiro e matrícula) utilizando **RabbitMQ**.
+5. **Performance e Resiliência**: Mitigação de latência com cache distribuído (**Redis**) e prevenção de falhas em cascata utilizando Circuit Breakers (Resilience4j).
+6. **Integração com IA Generativa**: Como construir sistemas inteligentes com **Spring AI** e interagir com Large Language Models (como a OpenAI).
+7. **Containerização (DevOps)**: Empacotamento de toda a plataforma de forma isolada com **Docker** e **Docker Compose**, unindo Frontend e Backend em uma única rede virtual.
+
+---
+
+## 🏗️ O Que Já Fizemos (A Nossa Jornada)
+
+O código deste projeto sofreu evoluções semanais (separadas historicamente por *branches* de estudo). A jornada técnica que concluímos abrangeu as seguintes fases vitais:
+
+### 🔹 FASE 1: O Monolito Básico (Fundação)
+- Construímos a base com Spring Boot e um banco único.
+- Adicionamos autenticação blindada com JWT e Spring Security.
+- Modelamos domínios com relacionamentos complexos, filtros, paginação e ordenação de buscas.
+- *Branches de referência: `1` a `7`.*
+
+### 🔹 FASE 2: A Quebra (Nasce o Ecossistema)
+- Estrangulamos o monolito em pedaços menores.
+- Subimos o `ms-config-server` para governança unificada de propriedades (application.yml injetado pelo GitHub).
+- *Branches de referência: `8` a `12`.*
+
+### 🔹 FASE 3: Orquestração e Comunicação
+- Implantamos o `ms-gateway` como porta de entrada única (Porta 8080) roteando para os demais módulos.
+- Implementamos a comunicação síncrona: usamos o bom e velho HTTP/REST (OpenFeign) e escalamos para altíssima performance binária usando **gRPC e Protobuf** entre `ms-academico` e `ms-financeiro`.
+- Fixamos o **PostgreSQL** para transações ACID (Acadêmico) e o **MongoDB** para dados flexíveis (Perfis).
+- *Branches de referência: `13` a `18`.*
+
+### 🔹 FASE 4: Mensageria e Assincronicidade
+- Resolvemos o gargalo do processamento introduzindo o **RabbitMQ**.
+- Agora, quando uma matrícula é realizada no `ms-academico`, um evento é emitido na fila `matricula.concluida.queue` e consumido silenciosamente pelo `ms-financeiro`.
+- *Branches de referência: `19` a `23`.*
+
+### 🔹 FASE 5: Alta Performance e Inteligência
+- Integramos o **Redis** para salvar e entregar dados imutáveis quase que instantaneamente.
+- Injetamos o **Spring AI** dentro do `ms-academico` para atuar como um *Conselheiro Pedagógico IA*, capaz de conversar com o usuário.
+- *Branches de referência: `24` a `27`.*
+
+### 🔹 FASE 6: O Gran Finale (Fullstack + DevOps)
+- Refatoramos todo o build com Maven (Fat JARs) e empacotamos tudo em **Containers Docker**.
+- Criamos o nosso **Frontend em React + Vite**, totalmente desacoplado, limpo (sem bibliotecas CSS pesadas, puramente *Dark Mode Vanilla CSS*), hospedado localmente pelo Docker e consumindo o nosso Gateway de forma segura com CORS configurado.
+- *Branch final (Gabarito Completo): `feature/frontend-react`.*
+
+---
+
+## 💻 Arquitetura Final Implementada
+
+Nosso ecossistema orquestrado agora conta com a seguinte estrutura física:
+
+- **Frontend:**
+  - `unitech-frontend`: (React + Vite na porta `5173`)
+- **Core Microsserviços Java:**
+  - `unitech-ms-gateway`: Roteador Central (Porta `8080`)
+  - `unitech-ms-auth`: Gerenciador de Identidades e JWT
+  - `unitech-ms-academico`: Core Relacional Educacional (Porta `8082`)
+  - `unitech-ms-financeiro`: Worker Assíncrono (Porta `8083`)
+  - `unitech-ms-perfil`: Core NoSQL Flexível (Porta `8084`)
+  - `unitech-ms-config-server`: Ponto Central de Configurações
+- **Infraestrutura em Nuvem (Docker):**
+  - `unitech-postgres`: Banco Relacional (Porta `5432`)
+  - `unitech-mongodb`: Banco de Documentos (Porta `27017`)
+  - `unitech-rabbitmq`: Message Broker (Porta `5672/15672`)
+  - `unitech-redis`: In-memory Data Structure (Porta `6379`)
+
+---
+
+## ⚙️ Como Executar a Versão Completa
+
+A arquitetura inteira está abstraída em um único arquivo de orquestração. Não é necessário ter Java, Node, Postgres ou Mongo instalados na máquina, **basta ter o Docker**.
+
+1. Na branch da versão final (`feature/frontend-react`), abra o seu terminal.
+2. Execute o comando mágico:
+   ```bash
+   docker-compose up -d --build
+   ```
+3. Aguarde o provisionamento de todos os containers.
+4. Acesse o frontend no seu navegador: **[http://localhost:5173](http://localhost:5173)**
+5. *(Opcional)* Todas as APIs continuam disponíveis puramente via Gateway através de `http://localhost:8080/api/...`
+
+🎉 **Sejam muito bem-vindos à fronteira moderna do Desenvolvimento de Software.**
