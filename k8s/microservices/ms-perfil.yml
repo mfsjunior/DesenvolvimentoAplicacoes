@@ -1,0 +1,34 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-perfil
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms-perfil
+  template:
+    metadata:
+      labels:
+        app: ms-perfil
+    spec:
+      containers:
+      - name: ms-perfil
+        image: unitech/ms-perfil:latest
+        ports:
+        - containerPort: 8084
+        env:
+        - name: SPRING_DATA_MONGODB_URI
+          value: mongodb://admin:adminpassword@mongodb-service:27017/perfil_db?authSource=admin
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-perfil-service
+spec:
+  selector:
+    app: ms-perfil
+  ports:
+    - protocol: TCP
+      port: 8084
+      targetPort: 8084

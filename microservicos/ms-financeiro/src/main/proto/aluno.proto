@@ -1,0 +1,19 @@
+﻿syntax = "proto3";
+package academico;
+
+option java_package = "com.unitech.grpc";
+option java_multiple_files = true;
+
+service AlunoService {
+  rpc ConsultarAluno (AlunoRequest) returns (AlunoResponse);
+}
+
+message AlunoRequest {
+  int64 id = 1;
+}
+
+message AlunoResponse {
+  int64 id = 1;
+  string nome = 2;
+  double mensalidade = 3;
+}

@@ -1,0 +1,31 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: ms-gateway
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+      routes:
+        - id: academico-route
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/alunos/**, /graphql/**
+        - id: financeiro-route
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/financeiro/**
+        - id: perfil-route
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/perfis/**

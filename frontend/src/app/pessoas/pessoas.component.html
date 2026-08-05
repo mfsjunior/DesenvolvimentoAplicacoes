@@ -1,7 +1,0 @@
-<div *ngIf="loading">Carregando...</div>
-<div *ngIf="error">{{ error }}</div>
-<ul *ngIf="!loading && !error">
-  <li *ngFor="let p of pessoas">
-    {{ p.nome }} — {{ p.idade }} anos
-  </li>
-</ul>

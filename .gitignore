@@ -85,3 +85,8 @@ ci-artifacts/
 # Se quiser versionar um exemplo de configuração, mantenha um arquivo de exemplo:
 # application.properties.example
 backend/src/main/java/com/exemplo/crud/index.html
+
+# Ignore Maven Targets
+*/target/*
+*.jar
+*.jar.original

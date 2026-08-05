@@ -1,9 +1,0 @@
-/* estilos mínimos do AppComponent */
-:host {
-  display: block;
-  font-family: Arial, sans-serif;
-  padding: 16px;
-}
-h1 {
-  color: #2c3e50;
-}

@@ -1,0 +1,14 @@
+/usr/src/mymaven/ms-academico/src/main/java/com/unitech/msacademico/MsAcademicoApplication.java
+/usr/src/mymaven/ms-academico/target/generated-sources/protobuf/java/com/unitech/grpc/AlunoResponseOrBuilder.java
+/usr/src/mymaven/ms-academico/target/generated-sources/protobuf/java/com/unitech/grpc/Aluno.java
+/usr/src/mymaven/ms-academico/src/main/java/com/unitech/msacademico/model/Curso.java
+/usr/src/mymaven/ms-academico/target/generated-sources/protobuf/java/com/unitech/grpc/AlunoRequest.java
+/usr/src/mymaven/ms-academico/src/main/java/com/unitech/msacademico/messaging/MatriculaPublisher.java
+/usr/src/mymaven/ms-academico/src/main/java/com/unitech/msacademico/controller/AlunoController.java
+/usr/src/mymaven/ms-academico/src/main/java/com/unitech/msacademico/controller/AlunoGraphController.java
+/usr/src/mymaven/ms-academico/src/main/java/com/unitech/msacademico/model/Aluno.java
+/usr/src/mymaven/ms-academico/src/main/java/com/unitech/msacademico/repository/AlunoRepository.java
+/usr/src/mymaven/ms-academico/target/generated-sources/protobuf/java/com/unitech/grpc/AlunoResponse.java
+/usr/src/mymaven/ms-academico/target/generated-sources/protobuf/grpc-java/com/unitech/grpc/AlunoServiceGrpc.java
+/usr/src/mymaven/ms-academico/target/generated-sources/protobuf/java/com/unitech/grpc/AlunoRequestOrBuilder.java
+/usr/src/mymaven/ms-academico/src/main/java/com/unitech/msacademico/controller/ConselheiroIAController.java

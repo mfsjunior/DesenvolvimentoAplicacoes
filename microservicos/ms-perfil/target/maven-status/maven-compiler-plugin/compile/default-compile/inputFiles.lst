@@ -1,0 +1,4 @@
+/usr/src/mymaven/ms-perfil/src/main/java/com/unitech/msperfil/model/PerfilAcademico.java
+/usr/src/mymaven/ms-perfil/src/main/java/com/unitech/msperfil/MsPerfilApplication.java
+/usr/src/mymaven/ms-perfil/src/main/java/com/unitech/msperfil/controller/PerfilController.java
+/usr/src/mymaven/ms-perfil/src/main/java/com/unitech/msperfil/repository/PerfilRepository.java

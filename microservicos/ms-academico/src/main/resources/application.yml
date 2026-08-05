@@ -1,0 +1,41 @@
+server:
+  port: 8082
+spring:
+  application:
+    name: ms-academico
+  datasource:
+    url: jdbc:postgresql://localhost:5432/academico_db
+    username: admin
+    password: adminpassword
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 50 # CapÃ­tulo 2: Performance
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  redis:
+    host: localhost
+    port: 6379
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+resilience4j:
+  circuitbreaker:
+    instances:
+      financeiroService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+  ai:
+    openai:
+      api-key: \
+      chat:
+        options:
+          model: gpt-3.5-turbo

@@ -1,0 +1,18 @@
+﻿type Aluno {
+    id: ID!
+    nome: String!
+    cpf: String!
+    matricula: String!
+    cursos: [Curso]
+}
+
+type Curso {
+    id: ID!
+    nome: String!
+    ementa: String
+}
+
+type Query {
+    alunoPorId(id: ID!): Aluno
+    todosOsAlunos: [Aluno]
+}

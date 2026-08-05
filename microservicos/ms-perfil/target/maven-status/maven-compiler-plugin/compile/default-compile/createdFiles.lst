@@ -1,0 +1,4 @@
+com/unitech/msperfil/controller/PerfilController.class
+com/unitech/msperfil/model/PerfilAcademico.class
+com/unitech/msperfil/repository/PerfilRepository.class
+com/unitech/msperfil/MsPerfilApplication.class

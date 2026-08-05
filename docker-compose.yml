@@ -1,29 +1,169 @@
+﻿version: '3.8'
+
 services:
-  # Backend - Spring Boot
-  app:
+  # PostgreSQL (CapÃ­tulo 2 e CQRS Write)
+  postgres:
+    image: postgres:15-alpine
+    container_name: unitech-postgres
+    environment:
+      POSTGRES_DB: academico_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+    ports:
+      - "5432:5432"
+    networks:
+      - unitech-network
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # MongoDB (CapÃ­tulo 16 - NoSQL Perfil e CQRS Read)
+  mongodb:
+    image: mongo:6.0
+    container_name: unitech-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: adminpassword
+    ports:
+      - "27017:27017"
+    networks:
+      - unitech-network
+    volumes:
+      - mongodata:/data/db
+
+  # Redis (CapÃ­tulo 5 - Cache)
+  redis:
+    image: redis:7-alpine
+    container_name: unitech-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    networks:
+      - unitech-network
+
+  # RabbitMQ (CapÃ­tulo 6 - Mensageria)
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: unitech-rabbitmq
+    ports:
+      - "5672:5672"   # AplicaÃ§Ã£o Java
+      - "15672:15672" # Painel Admin
+    networks:
+      - unitech-network
+
+  # --- MICROSERVIÃ‡OS JAVA ---
+  ms-config-server:
     build:
-      context: ./backend
-    container_name: crud-springboot
+      context: ./microservicos/ms-config-server
+    container_name: unitech-ms-config-server
+    environment:
+      - SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED=false
+    ports:
+      - "8888:8888"
+    networks:
+      - unitech-network
+
+  ms-auth:
+    build:
+      context: ./microservicos/ms-auth
+    container_name: unitech-ms-auth
+    environment:
+      - SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED=false
+    ports:
+      - "8081:8081"
+    networks:
+      - unitech-network
+
+  ms-academico:
+    build:
+      context: ./microservicos/ms-academico
+    container_name: unitech-ms-academico
+    environment:
+      - SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED=false
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/academico_db
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_REDIS_HOST=redis
+      - SPRING_AI_OPENAI_API_KEY=sk-dummy-12345
+    ports:
+      - "8082:8082"
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+    networks:
+      - unitech-network
+
+  ms-financeiro:
+    build:
+      context: ./microservicos/ms-financeiro
+    container_name: unitech-ms-financeiro
+    environment:
+      - SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED=false
+      - SPRING_RABBITMQ_HOST=rabbitmq
+    ports:
+      - "8083:8083"
+    depends_on:
+      - rabbitmq
+    networks:
+      - unitech-network
+
+  ms-perfil:
+    build:
+      context: ./microservicos/ms-perfil
+    container_name: unitech-ms-perfil
+    environment:
+      - SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED=false
+      - SPRING_DATA_MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/perfil_db?authSource=admin
+    ports:
+      - "8084:8084"
+    depends_on:
+      - mongodb
+    networks:
+      - unitech-network
+
+  ms-gateway:
+    build:
+      context: ./microservicos/ms-gateway
+    container_name: unitech-ms-gateway
+    environment:
+      - SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED=false
+      - SPRING_CLOUD_GATEWAY_ROUTES_0_ID=academico-route
+      - SPRING_CLOUD_GATEWAY_ROUTES_0_URI=http://ms-academico:8082
+      - SPRING_CLOUD_GATEWAY_ROUTES_0_PREDICATES_0=Path=/api/alunos/**, /graphql/**
+      - SPRING_CLOUD_GATEWAY_ROUTES_1_ID=financeiro-route
+      - SPRING_CLOUD_GATEWAY_ROUTES_1_URI=http://ms-financeiro:8083
+      - SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0=Path=/api/financeiro/**
+      - SPRING_CLOUD_GATEWAY_ROUTES_2_ID=perfil-route
+      - SPRING_CLOUD_GATEWAY_ROUTES_2_URI=http://ms-perfil:8084
+      - SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0=Path=/api/perfis/**
     ports:
       - "8080:8080"
-    environment:
-      - SPRING_DATA_MONGODB_URI=mongodb+srv://usuariodobanco:senha@cluster0.datgvgs.mongodb.net/nomedobanco?retryWrites=true&w=majority
-
+    depends_on:
+      - ms-academico
+      - ms-financeiro
+      - ms-perfil
     networks:
-      - app-network
+      - unitech-network
 
-  # Frontend - Angular com Nginx configurado para redirecionar /api para o backend
   frontend:
     build:
       context: ./frontend
-    container_name: angular-app
+    container_name: unitech-frontend
     ports:
-      - "4200:80"
-    depends_on:
-      - app
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     networks:
-      - app-network
+      - unitech-network
+    environment:
+      - VITE_API_GATEWAY_URL=http://localhost:8080
 
 networks:
-  app-network:
+  unitech-network:
     driver: bridge
+
+volumes:
+  pgdata:
+  mongodata:
+
+
