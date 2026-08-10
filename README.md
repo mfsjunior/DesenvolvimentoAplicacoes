@@ -52,6 +52,8 @@ O código deste projeto sofreu evoluções semanais (separadas historicamente po
 ### 🔹 FASE 6: O Gran Finale (Fullstack + DevOps)
 - Refatoramos todo o build com Maven (Fat JARs) e empacotamos tudo em **Containers Docker**.
 - Criamos o nosso **Frontend em React + Vite**, totalmente desacoplado, limpo (sem bibliotecas CSS pesadas, puramente *Dark Mode Vanilla CSS*), hospedado localmente pelo Docker e consumindo o nosso Gateway de forma segura com CORS configurado.
+- Aprimoramos o Front-end para atuar como uma verdadeira **Fábrica de Software Educacional**, com código 100% comentado linha a linha ensinando arquitetura.
+- Desenvolvemos interfaces avançadas, incluindo um **Dashboard Arquitetural Didático** e uma **Tela de Observabilidade/Health Check** que monitora visualmente a saúde do RabbitMQ, Redis, Gateway e Bancos de Dados.
 - *Branch final (Gabarito Completo): `feature/frontend-react`.*
 
 ---
